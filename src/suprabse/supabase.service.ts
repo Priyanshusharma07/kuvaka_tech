@@ -13,7 +13,6 @@ export class SupabaseService {
             throw new Error(' Missing Supabase credentials in environment variables');
         }
 
-        // ✅ TypeScript now knows these are non-undefined
         this.supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
     }
 

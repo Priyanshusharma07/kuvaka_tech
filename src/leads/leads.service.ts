@@ -29,15 +29,14 @@ export class LeadsService {
         @InjectRepository(Offer)
         private readonly offerRepo: Repository<Offer>,
     ) {
-        this.openRouterApiKey =
-            process.env.OPENROUTER_API_KEY ||
-            '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';
-        if (!this.openRouterApiKey) {
-            throw new Error('❌ Missing OPENROUTER_API_KEY in environment variables');
-        }
+         this.openRouterApiKey = this.configService.get<string>('OPENROUTER_API_KEY');
+
+    if (!this.openRouterApiKey) {
+      throw new Error('❌ Missing OPENROUTER_API_KEY in environment variables');
+    }   
     }
 
-    /** 📤 Upload leads via CSV */
+
     async uploadLeads(file: Express.Multer.File): Promise<Lead[]> {
         if (!file?.buffer) {
             throw new HttpException('Invalid file upload', HttpStatus.BAD_REQUEST);
@@ -71,7 +70,6 @@ export class LeadsService {
         });
     }
 
-    /** ⚙️ Run rule + AI scoring pipeline */
     async runScoringPipeline(offerId: string): Promise<Lead[]> {
         const offer = await this.offerRepo.findOne({ where: { id: offerId } });
         if (!offer) {
@@ -134,7 +132,6 @@ export class LeadsService {
         return scoredLeads;
     }
 
-    /** 🧠 AI Layer using OpenRouter */
     private async getAIIntent(lead: Lead, offer: Offer) {
         const prompt = `
 You are an AI sales assistant.
@@ -188,12 +185,11 @@ Return JSON like:
         }
     }
 
-    /** 📊 Get all scored leads */
     async getResults(): Promise<Lead[]> {
         return this.leadRepo.find({ where: { scored: true } });
     }
 
-    /** 📁 Export leads as CSV */
+
     async exportLeadsToCSV(res: ExpressResponse): Promise<void> {
         try {
             const leads = await this.leadRepo.find({ where: { scored: true } });
