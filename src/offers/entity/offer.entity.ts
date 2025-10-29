@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+import { isEmpty } from 'rxjs';
 
 @Entity('offers')
 export class Offer {
@@ -8,7 +9,7 @@ export class Offer {
   id: string;
 
   @ApiProperty({ example: 'AI Outreach Automation', description: 'Name of the product or offer' })
-  @Column()
+  @Column({nullable: true})
   name: string;
 
   @ApiProperty({

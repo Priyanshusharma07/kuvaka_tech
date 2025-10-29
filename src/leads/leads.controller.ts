@@ -2,22 +2,23 @@ import {
     Controller,
     Post,
     Get,
-    Query,
-    UploadedFile,
+    Param,
     UseInterceptors,
+    UploadedFile,
+    Res,
     HttpException,
     HttpStatus,
 } from '@nestjs/common';
+import { LeadsService } from './leads.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import type { Response as ExpressResponse } from 'express';
 import {
     ApiTags,
     ApiOperation,
-    ApiQuery,
     ApiResponse,
     ApiConsumes,
     ApiBody,
 } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { LeadsService } from './leads.service';
 import { Lead } from './entity/lead.entity';
 
 @ApiTags('Leads')
@@ -25,7 +26,6 @@ import { Lead } from './entity/lead.entity';
 export class LeadsController {
     constructor(private readonly leadsService: LeadsService) { }
 
-    // --- Upload CSV ---
     @Post('upload')
     @ApiOperation({ summary: 'Upload a CSV file of leads' })
     @ApiConsumes('multipart/form-data')
@@ -54,32 +54,27 @@ export class LeadsController {
         return this.leadsService.uploadLeads(file);
     }
 
-    // --- Scoring API ---
-    @Post('score')
-    @ApiOperation({ summary: 'Run scoring pipeline for uploaded leads' })
-    @ApiQuery({
-        name: 'offerId',
-        required: true,
-        description: 'Offer ID to use for scoring',
-    })
+    @Post('score/:offerId')
+    @ApiOperation({ summary: 'Run AI + rule-based scoring pipeline for an offer' })
     @ApiResponse({
         status: 200,
-        description: 'Leads scored successfully',
-        type: [Lead],
+        description: 'Lead scoring completed successfully',
     })
-    async scoreLeads(@Query('offerId') offerId: string): Promise<Lead[]> {
+    async runScoring(@Param('offerId') offerId: string) {
         return this.leadsService.runScoringPipeline(offerId);
     }
 
-    // --- Get results API ---
     @Get('results')
     @ApiOperation({ summary: 'Get all scored leads' })
-    @ApiResponse({
-        status: 200,
-        description: 'List of scored leads',
-        type: [Lead],
-    })
-    async getResults(): Promise<Lead[]> {
+    @ApiResponse({ status: 200, description: 'List of scored leads' })
+    async getResults() {
         return this.leadsService.getResults();
+    }
+
+    @Get('export')
+    @ApiOperation({ summary: 'Export all scored leads as CSV' })
+    @ApiResponse({ status: 200, description: 'CSV file downloaded successfully' })
+    async exportLeads(@Res() res: ExpressResponse) {
+        return this.leadsService.exportLeadsToCSV(res);
     }
 }

@@ -1,10 +1,17 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import {
+    Injectable,
+    HttpException,
+    HttpStatus,
+    InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Lead } from './entity/lead.entity';
 import { Offer } from '../offers/entity/offer.entity';
 import { Readable } from 'stream';
 import csvParser from 'csv-parser';
+import type { Response as ExpressResponse } from 'express';
+import { Parser } from 'json2csv';
 import * as dotenv from 'dotenv';
 import fetch from 'node-fetch';
 
@@ -22,17 +29,17 @@ export class LeadsService {
         @InjectRepository(Offer)
         private readonly offerRepo: Repository<Offer>,
     ) {
-        this.openRouterApiKey = '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';
+        this.openRouterApiKey =
+            process.env.OPENROUTER_API_KEY ||
+            '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';
         if (!this.openRouterApiKey) {
             throw new Error('❌ Missing OPENROUTER_API_KEY in environment variables');
         }
     }
 
-    /**
-     * 📤 Upload leads via CSV
-     */
+    /** 📤 Upload leads via CSV */
     async uploadLeads(file: Express.Multer.File): Promise<Lead[]> {
-        if (!file || !file.buffer) {
+        if (!file?.buffer) {
             throw new HttpException('Invalid file upload', HttpStatus.BAD_REQUEST);
         }
 
@@ -60,13 +67,11 @@ export class LeadsService {
                         reject(err);
                     }
                 })
-                .on('error', (err) => reject(err));
+                .on('error', reject);
         });
     }
 
-    /**
-     * ⚙️ Run rule + AI scoring pipeline
-     */
+    /** ⚙️ Run rule + AI scoring pipeline */
     async runScoringPipeline(offerId: string): Promise<Lead[]> {
         const offer = await this.offerRepo.findOne({ where: { id: offerId } });
         if (!offer) {
@@ -77,23 +82,15 @@ export class LeadsService {
         const scoredLeads: Lead[] = [];
 
         for (const lead of leads) {
-            // ----- RULE LAYER -----
             let ruleScore = 0;
 
-            // Role relevance
             const role = lead.role?.toLowerCase() || '';
-            if (
-                role.includes('head') ||
-                role.includes('founder') ||
-                role.includes('chief') ||
-                role.includes('director')
-            ) {
+            if (['head', 'founder', 'chief', 'director'].some((kw) => role.includes(kw))) {
                 ruleScore += 20;
-            } else if (role.includes('manager') || role.includes('lead')) {
+            } else if (['manager', 'lead'].some((kw) => role.includes(kw))) {
                 ruleScore += 10;
             }
 
-            // Industry match
             const matchIndustry = offer['ideal_use_cases']?.some((useCase) =>
                 lead.industry?.toLowerCase().includes(useCase.toLowerCase()),
             );
@@ -102,10 +99,10 @@ export class LeadsService {
                 offer['value_props']?.some((prop) =>
                     lead.industry?.toLowerCase().includes(prop.toLowerCase()),
                 )
-            )
+            ) {
                 ruleScore += 10;
+            }
 
-            // Data completeness
             if (
                 lead.name &&
                 lead.role &&
@@ -117,7 +114,6 @@ export class LeadsService {
                 ruleScore += 10;
             }
 
-            // ----- AI LAYER -----
             const aiResponse = await this.getAIIntent(lead, offer);
             const aiPoints =
                 aiResponse.intent === 'High'
@@ -126,12 +122,9 @@ export class LeadsService {
                         ? 30
                         : 10;
 
-            // Final score
-            const totalScore = ruleScore + aiPoints;
-
             lead.intent = aiResponse.intent;
             lead.reasoning = aiResponse.reasoning;
-            lead.score = totalScore;
+            lead.score = ruleScore + aiPoints;
             lead.scored = true;
 
             await this.leadRepo.save(lead);
@@ -141,10 +134,8 @@ export class LeadsService {
         return scoredLeads;
     }
 
-    /**
-     * 🧠 AI Layer using OpenRouter (ChatGPT-style API)
-     */
-    async getAIIntent(lead: Lead, offer: Offer) {
+    /** 🧠 AI Layer using OpenRouter */
+    private async getAIIntent(lead: Lead, offer: Offer) {
         const prompt = `
 You are an AI sales assistant.
 Given the following lead and offer details, classify the buying intent as High, Medium, or Low.
@@ -170,22 +161,20 @@ Return JSON like:
             const response = await fetch(this.openRouterUrl, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${this.openRouterApiKey}`,
+                    Authorization: `Bearer ${this.openRouterApiKey}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    model: 'gpt-4o-mini', // ✅ or any OpenRouter-supported model
+                    model: 'gpt-4o-mini',
                     messages: [{ role: 'user', content: prompt }],
                 }),
             });
 
             const data = await response.json();
             const rawText = data?.choices?.[0]?.message?.content?.trim() || '';
-
-            // ✅ Remove Markdown fences like ```json ... ```
             const cleanedText = rawText.replace(/```json|```/g, '').trim();
-
             const parsed = JSON.parse(cleanedText);
+
             return {
                 intent: parsed.intent || 'Medium',
                 reasoning: parsed.reasoning || 'No reasoning provided.',
@@ -199,10 +188,43 @@ Return JSON like:
         }
     }
 
-    /**
-     * 📊 Get all scored leads
-     */
+    /** 📊 Get all scored leads */
     async getResults(): Promise<Lead[]> {
         return this.leadRepo.find({ where: { scored: true } });
+    }
+
+    /** 📁 Export leads as CSV */
+    async exportLeadsToCSV(res: ExpressResponse): Promise<void> {
+        try {
+            const leads = await this.leadRepo.find({ where: { scored: true } });
+
+            if (!leads.length) {
+                res.status(404).send('No leads found to export');
+                return;
+            }
+
+            const fields = [
+                'id',
+                'name',
+                'role',
+                'company',
+                'industry',
+                'location',
+                'linkedin_bio',
+                'intent',
+                'reasoning',
+                'score',
+            ];
+
+            const parser = new Parser({ fields });
+            const csv = parser.parse(leads);
+
+            res.setHeader('Content-Type', 'text/csv');
+            res.setHeader('Content-Disposition', 'attachment; filename=leads_results.csv');
+            res.status(200).end(csv);
+        } catch (error) {
+            console.error('Error exporting leads to CSV:', error);
+            throw new InternalServerErrorException('Failed to export leads');
+        }
     }
 }

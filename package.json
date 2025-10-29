@@ -30,6 +30,7 @@
     "@supabase/supabase-js": "^2.77.0",
     "csv-parser": "^3.2.0",
     "dotenv": "^17.2.3",
+    "json2csv": "^6.0.0-alpha.2",
     "node-fetch": "^2.7.0",
     "openai": "^6.7.0",
     "pg": "^8.16.3",
