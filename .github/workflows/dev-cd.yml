@@ -1,0 +1,60 @@
+name: Dev CD pipeline
+
+on:
+    workflow_run:
+        workflows: ["Dev CI pipeline"]
+        types:
+            - completed
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Deploy to EC2
+              uses: appleboy/ssh-action@v1.0.0
+              with:
+                  host: ${{ secrets.EC2_HOST }}
+                  username: ${{ secrets.EC2_USER }}
+                  key: ${{ secrets.EC2_KEY }}
+                  script: |
+                      echo "Checking if old container exists..."
+                      if [ "$(docker ps -aq -f name=jvre)" ]; then
+                        echo "Stopping old container..."
+                        docker stop jvre
+                        echo "Removing old container..."
+                        docker rm jvre
+                      fi
+
+                      echo "Removing old image (if exists)..."
+                      if [ "$(docker images -q priyanshusharma015/jvre:latest)" ]; then
+                        docker rmi priyanshusharma015/jvre:latest
+                      fi
+
+                      echo "Pulling latest Docker image..."
+                      docker pull priyanshusharma015/jvre:latest
+
+                      echo "Starting container..."
+                      docker run -d --name jvre \
+                        -p 3001:3001 \
+                        --env-file /home/ec2-user/.env \
+                        --restart unless-stopped \
+                        priyanshusharma015/jvre:latest
+
+                      echo "Checking container status..."
+                      sleep 5
+                      if [ "$(docker inspect -f '{{.State.Running}}' jvre)" != "true" ]; then
+                        echo "Container failed to start. Showing logs:"
+                        docker logs jvre
+                        exit 1
+                      fi
+
+                      echo "Reloading Nginx (if installed)..."
+                      if command -v nginx &> /dev/null; then
+                        sudo nginx -s reload
+                      else
+                        echo "Nginx not installed, skipping reload."
+                      fi
