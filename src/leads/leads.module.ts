@@ -8,7 +8,7 @@ import { Offer } from 'src/offers/entity/offer.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Lead, Offer]), // ✅ register both entities here
+    TypeOrmModule.forFeature([Lead, Offer]), 
   ],
   controllers: [LeadsController],
   providers: [LeadsService, OffersModule],

@@ -1,27 +1,50 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
-import { Lead } from './leads/entity/lead.entity';
-import { OffersModule } from './offers/offers.module';
-import { LeadsModule } from './leads/leads.module';
-import { ScoringService } from './scoring/scoring.service';
-import { Offer } from './offers/entity/offer.entity';
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { LeadsModule } from "./leads/leads.module";
+import { OffersModule } from "./offers/offers.module";
+import { ConfigModule } from "@nestjs/config";
+import { Module } from "@nestjs/common";
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'aws-1-ap-south-1.pooler.supabase.com',
-      port: 6543,
-      username: 'postgres.lfwnlbdxawasnkxyiubk',
-      password: 'Sharma@1234',
-      database: 'postgres',
-      autoLoadEntities: true,
-      synchronize: true,
-    }), OffersModule, LeadsModule
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+    TypeOrmModule.forRootAsync({
+      useFactory: () => {
+        const {
+          DB_HOST,
+          DB_PORT,
+          DB_USERNAME,
+          DB_PASSWORD,
+          DB_DATABASE,
+        } = process.env;
 
+        if (!DB_HOST || !DB_PORT || !DB_USERNAME || !DB_PASSWORD || !DB_DATABASE) {
+          console.error(' Loaded DB env vars:', {
+            DB_HOST,
+            DB_PORT,
+            DB_USERNAME,
+            DB_PASSWORD: DB_PASSWORD,
+            DB_DATABASE,
+          });
+          throw new Error(' Missing database configuration in environment variables.');
+        }
+
+        return {
+          type: 'postgres',
+          host: DB_HOST,
+          port: parseInt(DB_PORT, 10),
+          username: DB_USERNAME,
+          password: DB_PASSWORD,
+          database: DB_DATABASE,
+          autoLoadEntities: true,
+          synchronize: true,
+        };
+      },
+    }),
+    LeadsModule,
+    OffersModule,
   ],
-  providers: [ScoringService],
 })
-export class AppModule { }
+export class AppModule {}

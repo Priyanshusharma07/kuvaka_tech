@@ -1,0 +1,65 @@
+name: Dev CD pipeline
+
+on:
+    workflow_run:
+        workflows: ["Dev CI pipeline"]
+        types:
+            - completed
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name:  Checkout code
+              uses: actions/checkout@v4
+
+            - name:  Deploy to EC2
+              uses: appleboy/ssh-action@v1.0.0
+              with:
+                  host: ${{ secrets.EC2_HOST }}
+                  username: ${{ secrets.EC2_USER }}
+                  key: ${{ secrets.EC2_KEY }}
+                  script: |
+                      echo "==> Logging into Docker Hub..."
+                      echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+                      echo "==> Checking for old container..."
+                      if [ "$(docker ps -aq -f name=jvre)" ]; then
+                        echo "Stopping old container..."
+                        docker stop jvre || true
+                        echo "Removing old container..."
+                        docker rm jvre || true
+                      fi
+
+                      echo "==> Removing old image (if any)..."
+                      if [ "$(docker images -q sharmacu/task:latest)" ]; then
+                        docker rmi sharmacu/task:latest || true
+                      fi
+
+                      echo "==> Pulling latest image..."
+                      docker pull sharmacu/task:latest
+
+                      echo "==> Starting new container..."
+                      docker run -d --name jvre \
+                        -p 3001:3001 \
+                        --env-file ${{ secrets.ENV_PATH || '/home/ec2-user/.env' }} \
+                        --restart unless-stopped \
+                        sharmacu/task:latest
+
+                      echo "==> Waiting for container to start..."
+                      sleep 5
+                      if [ "$(docker inspect -f '{{.State.Running}}' jvre)" != "true" ]; then
+                        echo "Container failed to start. Showing logs:"
+                        docker logs jvre
+                        exit 1
+                      fi
+
+                      echo " Container running successfully!"
+
+                      if command -v nginx &> /dev/null; then
+                        echo "==> Reloading Nginx..."
+                        sudo nginx -s reload || sudo systemctl reload nginx
+                      else
+                        echo " Nginx not installed, skipping reload."
+                      fi
