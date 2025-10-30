@@ -16,7 +16,7 @@ The goal is to:
 ✅ Offer & Lead Upload APIs  
 ✅ CSV Upload & Parsing  
 ✅ Rule-Based + AI-Based Scoring Pipeline  
-✅ Gemini API Integration  
+✅ OpenRouter API Integration  
 ✅ Result Storage in Supabase DB  
 ✅ CSV Export Endpoint  
 ✅ Swagger API Documentation  
@@ -71,8 +71,6 @@ DB_SYNCHORNIZATION=true
 SUPABASE_URL=https://lfwnlbdxawasnkxyiubk.supabase.co
 SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
-# --- AI Model ---
-GEMINI_API_KEY=AIzaSyAj*************
 
 # --- Optional ---
 OPENROUTER_API_KEY=sk-or-v1-*********************
@@ -197,7 +195,7 @@ docker build -t lead-scoring-backend .
 Run Container
 bash
 Copy code
-docker run -p 3000:3000 --env-file .env lead-scoring-backend
+docker run -p 3001:3001 --env-file .env lead-scoring-backend
 App runs on:
 👉 http://localhost:3000
 
@@ -256,6 +254,7 @@ AWS Deployment	✅ Done
 💡 Author
 Priyanshu Sharma
 Backend Developer | Node.js | NestJS | AI Integration
-📧 priyanshusharma.dev@gmail.com
-🌐 GitHub: @priyanshusharma
+📧 priyanshusharma784@gmail.com
+🌐 GitHub: https://github.com/Priyanshusharma07/kuvaka_tech
+Leetcode : https://leetcode.com/u/Sharma00015/
 
