@@ -2,9 +2,9 @@ name: Dev CI pipeline
 
 on:
     push:
-        branches: ["master"]
+        branches: ["dev"]
     pull_request:
-        branches: ["master"]
+        branches: ["dev"]
 #not working
 jobs:
     build:
