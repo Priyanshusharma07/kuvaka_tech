@@ -43,8 +43,8 @@ import { Module } from "@nestjs/common";
         };
       },
     }),
-    LeadsModule,
     OffersModule,
+    LeadsModule,
   ],
 })
 export class AppModule {}
