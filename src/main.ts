@@ -25,7 +25,7 @@ async function bootstrap() {
     transform: true,
   }),
 
-    await app.listen(3005);
+    await app.listen(3001);
   console.log(` Server running on http://localhost:3005`);
   console.log(` Swagger docs available at http://localhost:3005/api`);
 }
