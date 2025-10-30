@@ -1,98 +1,232 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+🧠 AI Lead Qualification Backend
+🚀 Backend Engineer Hiring Assignment – Completed by Priyanshu Sharma
+📘 Overview
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This project implements a Lead Qualification Backend that intelligently scores and classifies leads based on Product/Offer data and uploaded Lead CSV files.
+The scoring combines rule-based logic (50 pts) and AI-driven reasoning (50 pts) using Gemini API, producing a final Intent score (High / Medium / Low).
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+🧩 Key Features
+Category	Description
+🧠 AI Integration	Integrated with Gemini API to analyze offer + lead context and return human-like intent classification and reasoning.
+⚙️ Rule-based Engine	Applies deterministic logic for role relevance, industry match, and data completeness.
+📦 CSV Upload & Parsing	Upload and process bulk leads in CSV format via /leads/upload.
+💬 Scoring Pipeline	Runs combined AI + rule-based scoring to assign intent and reasoning.
+📊 Results Management	Fetch or export all scored leads in JSON or CSV format.
+🧾 Swagger Docs	Fully documented REST APIs with request/response schemas.
+🧱 Supabase Integration	Used as a managed PostgreSQL database for structured data visibility.
+🧪 Unit Testing (Jest)	Functional tests for rule-based scoring logic and service methods.
+🐳 Dockerized	Ready-to-deploy container setup for consistent environment.
+☁️ CI/CD + AWS Deployment	Auto-deploy pipeline to AWS EC2 with GitHub Actions.
+🧰 Tech Stack
+Layer	Technology
+Backend Framework	NestJS (TypeScript)
+Database	PostgreSQL (Supabase)
+ORM	TypeORM
+AI Provider	Gemini API (Google Generative AI)
+Validation	class-validator, class-transformer
+Documentation	Swagger
+Testing	Jest
+Deployment	AWS EC2
+Containerization	Docker, Docker Compose
+CI/CD	GitHub Actions
+⚙️ Setup & Installation
+1️⃣ Clone the Repository
+git clone https://github.com/<your-username>/ai-lead-qualification.git
+cd ai-lead-qualification
 
-## Description
+2️⃣ Install Dependencies
+npm install
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+3️⃣ Configure Environment
 
-## Project setup
+Create a .env file in the root directory:
 
-```bash
-$ npm install
-```
+# Application
+PORT=3001
+NODE_ENV=development
 
-## Compile and run the project
+# Database (Supabase)
+DB_HOST=<your-supabase-host>
+DB_PORT=5432
+DB_USER=<your-db-user>
+DB_PASSWORD=<your-db-password>
+DB_NAME=<your-db-name>
 
-```bash
-# development
-$ npm run start
+# AI Provider
+GEMINI_API_KEY=<your-gemini-api-key>
 
-# watch mode
-$ npm run start:dev
+4️⃣ Run in Development
+npm run start:dev
 
-# production mode
-$ npm run start:prod
-```
+5️⃣ Run via Docker
+docker-compose up --build
 
-## Run tests
+🔍 API Documentation (Swagger)
 
-```bash
-# unit tests
-$ npm run test
+Once running, open Swagger UI:
 
-# e2e tests
-$ npm run test:e2e
+http://localhost:3001/api
 
-# test coverage
-$ npm run test:cov
-```
+📤 API Endpoints
+🟢 Create Offer
 
-## Deployment
+POST /offer
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+{
+  "name": "AI Outreach Automation",
+  "value_props": ["24/7 outreach", "6x more meetings"],
+  "ideal_use_cases": ["B2B SaaS mid-market"]
+}
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+🟠 Upload Leads (CSV)
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+POST /leads/upload
+Form Data:
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+file: leads.csv
 
-## Resources
 
-Check out a few resources that may come in handy when working with NestJS:
+📄 Example CSV:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+name,role,company,industry,location,linkedin_bio
+Ava Patel,Head of Growth,FlowMetrics,SaaS,Bangalore,"India"
+Rahul Mehta,Marketing Manager,DataNest,Technology,Mumbai,"India"
 
-## Support
+🧠 Run Scoring
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+POST /leads/score/:offerId
 
-## Stay in touch
+Response:
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+[
+  {
+    "name": "Ava Patel",
+    "role": "Head of Growth",
+    "company": "FlowMetrics",
+    "intent": "High",
+    "score": 85,
+    "reasoning": "Fits ICP SaaS mid-market and is a decision maker."
+  }
+]
 
-## License
+📈 Get Results
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+GET /leads/results
+
+[
+  {
+    "name": "Rahul Mehta",
+    "role": "Marketing Manager",
+    "company": "DataNest",
+    "intent": "Medium",
+    "score": 65,
+    "reasoning": "Marketing role somewhat aligned with product focus."
+  }
+]
+
+📤 Export Results as CSV (Bonus)
+
+GET /leads/export
+➡️ Downloads all scored leads as a .csv file.
+
+🧠 Scoring Logic
+Layer	Criteria	Points
+Rule-based (50)	Role relevance (decision maker +20 / influencer +10)
+Industry match (exact ICP +20 / adjacent +10)
+Data completeness (+10)	0–50
+AI-based (50)	Gemini response: High (50), Medium (30), Low (10)	0–50
+Final Score	rule_score + ai_score	0–100
+🧪 Testing
+
+Run Jest tests:
+
+npm run test
+
+
+Includes:
+
+Unit tests for ruleScoreCalculator()
+
+Mocked AI response tests for deterministic results
+
+🐳 Docker Setup
+Dockerfile
+
+Multi-stage build for optimized image
+
+Uses node:20-alpine for small footprint
+
+Run
+docker build -t ai-lead-qualifier .
+docker run -p 3001:3001 ai-lead-qualifier
+
+⚙️ CI/CD (GitHub Actions)
+
+Automated pipeline includes:
+
+Lint & Test
+
+Build Docker image
+
+Deploy to AWS EC2 via SSH (or GitHub Secrets)
+
+File: .github/workflows/deploy.yml
+
+☁️ Deployment
+
+Live Base URL:
+
+https://api.<your-domain>.com
+
+
+Swagger:
+
+https://api.<your-domain>.com/api
+
+🧩 Folder Structure
+src/
+ ├── app.module.ts
+ ├── config/
+ │    ├── config.module.ts
+ │    ├── config.service.ts
+ ├── offers/
+ │    ├── dto/
+ │    │    └── create-offer.dto.ts
+ │    ├── entity/
+ │    │    └── offer.entity.ts
+ │    ├── offers.service.ts
+ │    └── offers.controller.ts
+ ├── leads/
+ │    ├── dto/
+ │    │    └── upload-leads.dto.ts
+ │    ├── entity/
+ │    │    └── lead.entity.ts
+ │    ├── leads.service.ts
+ │    └── leads.controller.ts
+ ├── common/
+ │    ├── utils/
+ │    │    └── scoring.helper.ts
+ │    └── constants.ts
+ ├── main.ts
+ └── ...
+
+🧠 Prompt Example (for Gemini AI)
+Given the following:
+Offer: "AI Outreach Automation" with value props ["24/7 outreach", "6x more meetings"] targeting ["B2B SaaS mid-market"]
+Prospect: Ava Patel, Head of Growth at FlowMetrics (SaaS, Bangalore)
+
+Classify the lead’s buying intent as High, Medium, or Low and provide 1-2 lines explaining your reasoning.
+
+📄 License
+
+This project is licensed under the MIT License.
+
+👨‍💻 Author
+
+Priyanshu Sharma
+Backend Developer | AI + Node.js + NestJS
+📧 priyanshusharma.dev@gmail.com
+
+🔗 LinkedIn
+
+🐙 GitHub
