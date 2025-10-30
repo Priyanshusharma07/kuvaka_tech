@@ -29,13 +29,12 @@ export class LeadsService {
         @InjectRepository(Offer)
         private readonly offerRepo: Repository<Offer>,
     ) {
-         this.openRouterApiKey = this.configService.get<string>('OPENROUTER_API_KEY');
+        const apiKey = process.env.OPENROUTER_API_KEY;
 
-    if (!this.openRouterApiKey) {
-      throw new Error('❌ Missing OPENROUTER_API_KEY in environment variables');
-    }   
+        if (!apiKey || !apiKey.startsWith('sk-')) {
+            throw new Error(' Missing or invalid OPENROUTER_API_KEY in environment variables');
+        }
     }
-
 
     async uploadLeads(file: Express.Multer.File): Promise<Lead[]> {
         if (!file?.buffer) {
