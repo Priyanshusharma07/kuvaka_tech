@@ -31,7 +31,7 @@ export class LeadsService {
     ) {
         const apiKey = process.env.OPENROUTER_API_KEY;
 
-        if (!apiKey || !apiKey.startsWith('sk-')) {
+        if (!apiKey || !apiKey.startsWith('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')) {
             throw new Error(' Missing or invalid OPENROUTER_API_KEY in environment variables');
         }
     }
