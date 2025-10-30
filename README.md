@@ -16,7 +16,7 @@ The goal is to:
 ✅ Offer & Lead Upload APIs  
 ✅ CSV Upload & Parsing  
 ✅ Rule-Based + AI-Based Scoring Pipeline  
-✅ Gemini API Integration  
+✅ OpenRouter API Integration  
 ✅ Result Storage in Supabase DB  
 ✅ CSV Export Endpoint  
 ✅ Swagger API Documentation  
