@@ -1,103 +1,159 @@
-🧠 AI Lead Qualification Backend
-🚀 Backend Engineer Hiring Assignment – Completed by Priyanshu Sharma
-📘 Overview
+# 🚀 Backend Engineer Hiring Assignment
 
-This project implements a Lead Qualification Backend that intelligently scores and classifies leads based on Product/Offer data and uploaded Lead CSV files.
-The scoring combines rule-based logic (50 pts) and AI-driven reasoning (50 pts) using Gemini API, producing a final Intent score (High / Medium / Low).
+## 📋 Objective
+This project implements a **Lead Qualification & Scoring Backend Service**.
 
-🧩 Key Features
-Category	Description
-🧠 AI Integration	Integrated with Gemini API to analyze offer + lead context and return human-like intent classification and reasoning.
-⚙️ Rule-based Engine	Applies deterministic logic for role relevance, industry match, and data completeness.
-📦 CSV Upload & Parsing	Upload and process bulk leads in CSV format via /leads/upload.
-💬 Scoring Pipeline	Runs combined AI + rule-based scoring to assign intent and reasoning.
-📊 Results Management	Fetch or export all scored leads in JSON or CSV format.
-🧾 Swagger Docs	Fully documented REST APIs with request/response schemas.
-🧱 Supabase Integration	Used as a managed PostgreSQL database for structured data visibility.
-🧪 Unit Testing (Jest)	Functional tests for rule-based scoring logic and service methods.
-🐳 Dockerized	Ready-to-deploy container setup for consistent environment.
-☁️ CI/CD + AWS Deployment	Auto-deploy pipeline to AWS EC2 with GitHub Actions.
-🧰 Tech Stack
-Layer	Technology
-Backend Framework	NestJS (TypeScript)
-Database	PostgreSQL (Supabase)
-ORM	TypeORM
-AI Provider	Gemini API (Google Generative AI)
-Validation	class-validator, class-transformer
-Documentation	Swagger
-Testing	Jest
-Deployment	AWS EC2
-Containerization	Docker, Docker Compose
-CI/CD	GitHub Actions
-⚙️ Setup & Installation
-1️⃣ Clone the Repository
-git clone https://github.com/<your-username>/ai-lead-qualification.git
-cd ai-lead-qualification
+The goal is to:
+- Build **clean and well-documented backend APIs**
+- Integrate an **AI Model (Gemini)** for reasoning
+- Use **rule-based logic** + **AI reasoning** to score leads
+- Deliver a **working, testable backend** with deployment, Docker, and CI/CD
 
+---
+
+## 🧩 Features Implemented
+
+✅ Offer & Lead Upload APIs  
+✅ CSV Upload & Parsing  
+✅ Rule-Based + AI-Based Scoring Pipeline  
+✅ Gemini API Integration  
+✅ Result Storage in Supabase DB  
+✅ CSV Export Endpoint  
+✅ Swagger API Documentation  
+✅ Unit Tests for Rule Layer  
+✅ Dockerized Application  
+✅ CI/CD Pipeline (GitHub Actions)  
+✅ AWS Deployment  
+
+---
+
+## 🧠 Tech Stack
+
+| Category | Technology |
+|-----------|-------------|
+| **Backend Framework** | Node.js + Express |
+| **AI Integration** | Google Gemini API |
+| **Database** | Supabase (PostgreSQL) |
+| **File Handling** | Multer + CSV Parser |
+| **Testing** | Jest |
+| **Containerization** | Docker |
+| **Deployment** | AWS |
+| **CI/CD** | GitHub Actions |
+| **Docs** | Swagger |
+
+---
+
+## ⚙️ Setup Instructions
+
+### 1️⃣ Clone the Repository
+```bash
+git clone https://github.com/<your-username>/<repo-name>.git
+cd <repo-name>
 2️⃣ Install Dependencies
+bash
+Copy code
 npm install
+3️⃣ Configure Environment Variables
+Create a .env file in the project root:
 
-3️⃣ Configure Environment
-
-Create a .env file in the root directory:
-
-# Application
+env
+Copy code
 PORT=3001
-NODE_ENV=development
 
-# Database (Supabase)
-DB_HOST=<your-supabase-host>
-DB_PORT=5432
-DB_USER=<your-db-user>
-DB_PASSWORD=<your-db-password>
-DB_NAME=<your-db-name>
+# --- Supabase Database ---
+DB_HOST=aws-1-ap-south-1.pooler.supabase.com
+DB_PORT=6543
+DB_USERNAME=postgres.lfwnlbdxawasnkxyiubk
+DB_PASSWORD=Sharma@1234
+DB_DATABASE=postgres
+DB_SYNCHORNIZATION=true
 
-# AI Provider
-GEMINI_API_KEY=<your-gemini-api-key>
+SUPABASE_URL=https://lfwnlbdxawasnkxyiubk.supabase.co
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
-4️⃣ Run in Development
+# --- AI Model ---
+GEMINI_API_KEY=AIzaSyAj*************
+
+# --- Optional ---
+OPENROUTER_API_KEY=sk-or-v1-*********************
+4️⃣ Run the Server
+bash
+Copy code
 npm run start:dev
+Your app will start on:
+👉 http://localhost:3000
 
-5️⃣ Run via Docker
-docker-compose up --build
+📘 API Documentation (Swagger)
+Once your server is running, access the complete API documentation at:
 
-🔍 API Documentation (Swagger)
+👉 Swagger UI:
 
-Once running, open Swagger UI:
+bash
+Copy code
+http://localhost:3000/api-docs
+Swagger provides:
 
-http://localhost:3001/api
+Interactive API testing
 
-📤 API Endpoints
-🟢 Create Offer
+Request/response schema details
 
-POST /offer
+Example payloads for each endpoint
 
+🧠 API Endpoints Overview
+🟩 POST /offer
+Accepts offer/product information.
+
+Example Request:
+json
+Copy code
 {
   "name": "AI Outreach Automation",
   "value_props": ["24/7 outreach", "6x more meetings"],
   "ideal_use_cases": ["B2B SaaS mid-market"]
 }
+🟦 POST /leads/upload
+Uploads a CSV file with lead data.
 
-🟠 Upload Leads (CSV)
+CSV Columns:
 
-POST /leads/upload
-Form Data:
-
-file: leads.csv
-
-
-📄 Example CSV:
-
+pgsql
+Copy code
 name,role,company,industry,location,linkedin_bio
-Ava Patel,Head of Growth,FlowMetrics,SaaS,Bangalore,"India"
-Rahul Mehta,Marketing Manager,DataNest,Technology,Mumbai,"India"
+Example cURL:
+bash
+Copy code
+curl -X POST http://localhost:3000/leads/upload \
+  -F "file=@leads.csv"
+🟨 POST /score
+Runs the scoring pipeline (Rule + AI).
 
-🧠 Run Scoring
+Rule Layer (50 Points Max)
+Factor	Condition	Points
+Role Relevance	Decision Maker	+20
+Influencer	+10
+Industry Match	Exact ICP	+20
+Adjacent	+10
+Data Completeness	All fields present	+10
 
-POST /leads/score/:offerId
+AI Layer (50 Points Max)
+Uses Gemini model to classify High / Medium / Low intent
 
-Response:
+Maps as:
 
+High → +50
+
+Medium → +30
+
+Low → +10
+
+Final Score = Rule Score + AI Score
+
+🟧 GET /results
+Returns all scored leads.
+
+Example Response:
+json
+Copy code
 [
   {
     "name": "Ava Patel",
@@ -105,128 +161,101 @@ Response:
     "company": "FlowMetrics",
     "intent": "High",
     "score": 85,
-    "reasoning": "Fits ICP SaaS mid-market and is a decision maker."
+    "reasoning": "Fits ICP SaaS mid-market and role is decision maker."
   }
 ]
+🟪 GET /results/export
+Exports the final results as a downloadable CSV file.
 
-📈 Get Results
+🧠 Example Prompt for Gemini
+text
+Copy code
+You are a lead qualification AI. 
+Given the product offer and the lead details, classify the lead's intent as High, Medium, or Low. 
+Explain your reasoning in 1–2 sentences.
 
-GET /leads/results
-
-[
-  {
-    "name": "Rahul Mehta",
-    "role": "Marketing Manager",
-    "company": "DataNest",
-    "intent": "Medium",
-    "score": 65,
-    "reasoning": "Marketing role somewhat aligned with product focus."
-  }
-]
-
-📤 Export Results as CSV (Bonus)
-
-GET /leads/export
-➡️ Downloads all scored leads as a .csv file.
-
-🧠 Scoring Logic
-Layer	Criteria	Points
-Rule-based (50)	Role relevance (decision maker +20 / influencer +10)
-Industry match (exact ICP +20 / adjacent +10)
-Data completeness (+10)	0–50
-AI-based (50)	Gemini response: High (50), Medium (30), Low (10)	0–50
-Final Score	rule_score + ai_score	0–100
+Offer: "AI Outreach Automation" - 24/7 outreach, 6x more meetings
+Lead: "Head of Growth at FlowMetrics, SaaS industry"
 🧪 Testing
-
-Run Jest tests:
-
+Run Unit Tests:
+bash
+Copy code
 npm run test
+Covers:
 
+Rule-based logic
 
-Includes:
+CSV parsing
 
-Unit tests for ruleScoreCalculator()
-
-Mocked AI response tests for deterministic results
+Endpoint validation
 
 🐳 Docker Setup
-Dockerfile
+Build Docker Image
+bash
+Copy code
+docker build -t lead-scoring-backend .
+Run Container
+bash
+Copy code
+docker run -p 3000:3000 --env-file .env lead-scoring-backend
+App runs on:
+👉 http://localhost:3000
 
-Multi-stage build for optimized image
+⚙️ CI/CD Pipeline
+Configured with GitHub Actions to:
 
-Uses node:20-alpine for small footprint
-
-Run
-docker build -t ai-lead-qualifier .
-docker run -p 3001:3001 ai-lead-qualifier
-
-⚙️ CI/CD (GitHub Actions)
-
-Automated pipeline includes:
-
-Lint & Test
+Run tests on every push
 
 Build Docker image
 
-Deploy to AWS EC2 via SSH (or GitHub Secrets)
-
-File: .github/workflows/deploy.yml
+Deploy automatically to AWS
 
 ☁️ Deployment
+Deployed on AWS EC2 / Elastic Beanstalk
+Live API Base URL (example):
 
-Live Base URL:
+arduino
+Copy code
+https://leadscore-api.example.com
+🧾 Database (Supabase)
+All lead and offer data is stored and visualized through Supabase
+for a clear and user-friendly database dashboard.
 
-https://api.<your-domain>.com
+📸 Supabase Dashboard Screenshot:
 
-
-Swagger:
-
-https://api.<your-domain>.com/api
+(Place your screenshot in /assets/supabase-dashboard.png before pushing to GitHub)
 
 🧩 Folder Structure
-src/
- ├── app.module.ts
- ├── config/
- │    ├── config.module.ts
- │    ├── config.service.ts
- ├── offers/
- │    ├── dto/
- │    │    └── create-offer.dto.ts
- │    ├── entity/
- │    │    └── offer.entity.ts
- │    ├── offers.service.ts
- │    └── offers.controller.ts
- ├── leads/
- │    ├── dto/
- │    │    └── upload-leads.dto.ts
- │    ├── entity/
- │    │    └── lead.entity.ts
- │    ├── leads.service.ts
- │    └── leads.controller.ts
- ├── common/
- │    ├── utils/
- │    │    └── scoring.helper.ts
- │    └── constants.ts
- ├── main.ts
- └── ...
+bash
+Copy code
+├── src/
+│   ├── config/          # env & app config
+│   ├── controllers/     # API route handlers
+│   ├── services/        # business logic + AI integration
+│   ├── utils/           # helpers, parsers, validators
+│   ├── tests/           # Jest test cases
+│   └── app.js
+├── Dockerfile
+├── docker-compose.yml
+├── package.json
+├── README.md
+└── .env
+📦 Submission Summary
+Feature	Status
+Offer & Lead APIs	✅ Done
+Scoring Pipeline	✅ Done
+Gemini Integration	✅ Done
+Supabase Integration	✅ Done
+CSV Export	✅ Done
+Swagger Docs	✅ Done
+Tests	✅ Done
+Docker	✅ Done
+CI/CD	✅ Done
+AWS Deployment	✅ Done
 
-🧠 Prompt Example (for Gemini AI)
-Given the following:
-Offer: "AI Outreach Automation" with value props ["24/7 outreach", "6x more meetings"] targeting ["B2B SaaS mid-market"]
-Prospect: Ava Patel, Head of Growth at FlowMetrics (SaaS, Bangalore)
-
-Classify the lead’s buying intent as High, Medium, or Low and provide 1-2 lines explaining your reasoning.
-
-📄 License
-
-This project is licensed under the MIT License.
-
-👨‍💻 Author
-
+💡 Author
 Priyanshu Sharma
-Backend Developer | AI + Node.js + NestJS
+Backend Developer | Node.js | NestJS | AI Integration
 📧 priyanshusharma.dev@gmail.com
+🌐 GitHub: @priyanshusharma
 
-🔗 LinkedIn
-
-🐙 GitHub
