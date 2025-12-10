@@ -42,7 +42,8 @@ jobs:
 
                       echo "==> Starting new container..."
                       docker run -d --name jvre \
-                        -p 3001:3001 \
+                        -p 
+                        1:3001 \
                         --env-file ${{ '/home/ec2-user/.env' }} \
                         --restart unless-stopped \
                         sharmacu/task:latest
